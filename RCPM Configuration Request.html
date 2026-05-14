@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RCPM Jira Ticket Template</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    min-height: 100vh;
+    padding: 32px 16px;
+    color: #172b4d;
+  }
+  .wrapper { max-width: 820px; margin: 0 auto; }
+
+  .header {
+    background: #0052cc; color: #fff;
+    border-radius: 6px 6px 0 0;
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-sub { font-size: 11px; opacity: 0.75; letter-spacing: 0.08em; text-transform: uppercase; }
+  .header-title { font-size: 20px; font-weight: 700; margin-top: 2px; }
+  .header-badge {
+    background: rgba(255,255,255,0.15); border-radius: 4px;
+    padding: 4px 12px; font-size: 12px; font-weight: 600;
+  }
+
+  /* View mode banner */
+  #view-banner {
+    display: none;
+    background: #e3fcef; border-bottom: 1.5px solid #00875a;
+    padding: 10px 24px; font-size: 13px; color: #006644;
+    align-items: center; justify-content: space-between; gap: 12px;
+  }
+  #view-banner.show { display: flex; }
+  #edit-btn {
+    background: #00875a; color: #fff; border: none; border-radius: 4px;
+    padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: inherit; white-space: nowrap; flex-shrink: 0;
+  }
+  #edit-btn:hover { background: #006644; }
+
+  .body { display: grid; grid-template-columns: 1fr 340px; }
+
+  .form-panel { background: #fff; padding: 24px; border-right: 1px solid #dfe1e6; }
+
+  .section-title {
+    font-size: 11px; font-weight: 700; color: #0052cc;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    border-bottom: 2px solid #0052cc;
+    padding-bottom: 5px; margin-bottom: 14px; margin-top: 22px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .field { margin-bottom: 14px; }
+  .field-label {
+    font-size: 12px; font-weight: 600; color: #44546f;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    display: flex; align-items: baseline; gap: 6px;
+    margin-bottom: 4px;
+  }
+  .field-hint { font-size: 11px; color: #8993a4; font-style: italic; font-weight: 400; text-transform: none; letter-spacing: 0; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  input, select, textarea {
+    width: 100%; padding: 7px 10px;
+    border: 1.5px solid #dfe1e6; border-radius: 4px;
+    font-size: 13px; color: #172b4d;
+    background: #fff; font-family: inherit;
+    outline: none; transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: #0052cc; }
+  textarea { height: 68px; resize: vertical; }
+  select { cursor: pointer; }
+
+  body.view-mode input,
+  body.view-mode select,
+  body.view-mode textarea {
+    background: #f4f5f7; color: #44546f;
+    border-color: #f4f5f7; cursor: default; pointer-events: none;
+  }
+
+  .attach-note {
+    background: #f4f5f7; border: 1.5px dashed #c1c7d0;
+    border-radius: 4px; padding: 10px 14px;
+    font-size: 12px; color: #6b778c;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .preview-panel { background: #fafbfc; padding: 24px 20px; }
+  .preview-label {
+    font-size: 11px; font-weight: 700; color: #44546f;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+  pre#preview {
+    background: #fff; border: 1.5px solid #dfe1e6; border-radius: 4px;
+    padding: 12px 14px; font-size: 11.5px; line-height: 1.75;
+    color: #172b4d; white-space: pre-wrap; word-break: break-all;
+    min-height: 280px; font-family: 'Courier New', monospace;
+  }
+  #ms-warning {
+    margin-top: 10px; border-radius: 4px; padding: 8px 12px;
+    font-size: 12px; font-weight: 600; display: none;
+  }
+  #ms-warning.low  { background:#fff0f0; border:1.5px solid #ff5630; color:#bf2600; display:block; }
+  #ms-warning.high { background:#fffae6; border:1.5px solid #ff991f; color:#974f0c; display:block; }
+  #ms-warning.ok   { background:#e3fcef; border:1.5px solid #00875a; color:#006644; display:block; }
+
+  .btn-row { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+
+  .btn {
+    width: 100%; border: none; border-radius: 4px;
+    padding: 10px 0; font-size: 13px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.02em;
+    transition: all 0.2s; font-family: inherit;
+  }
+  #copy-text-btn { background: #0052cc; color: #fff; }
+  #copy-text-btn:hover { background: #0747a6; }
+  #copy-text-btn.done { background: #00875a; }
+
+  #generate-link-btn { background: #fff; color: #0052cc; border: 1.5px solid #0052cc; }
+  #generate-link-btn:hover { background: #e9f0fb; }
+  #generate-link-btn.done { background: #e3fcef; color: #006644; border-color: #00875a; }
+
+  #link-box {
+    display: none; margin-top: 4px;
+    background: #fff; border: 1.5px solid #c1c7d0; border-radius: 4px;
+    padding: 8px 10px; font-size: 10.5px; color: #0052cc;
+    word-break: break-all; font-family: 'Courier New', monospace;
+    line-height: 1.5;
+  }
+  #link-box.show { display: block; }
+
+  .footer {
+    background: #fff; border-top: 1px solid #dfe1e6;
+    border-radius: 0 0 6px 6px;
+    padding: 10px 24px; font-size: 11px; color: #8993a4;
+    display: flex; gap: 20px; flex-wrap: wrap;
+  }
+  .footer a { color: #0052cc; text-decoration: none; }
+
+  @media (max-width: 640px) {
+    .body { grid-template-columns: 1fr; }
+    .header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div>
+      <div class="header-sub">Jira Ticket Template</div>
+      <div class="header-title">RCPM Configuration Request</div>
+    </div>
+    <div class="header-badge">Retail Cheat Price Modifier</div>
+  </div>
+
+  <div id="view-banner">
+    <span>👁 <strong>View mode</strong> — this link was shared with pre-filled data. Fields are read-only.</span>
+    <button id="edit-btn" onclick="enterEditMode()">Start New Ticket</button>
+  </div>
+
+  <div class="body">
+
+    <div class="form-panel">
+
+      <div class="section-title">Basics</div>
+
+      <div class="field">
+        <div class="field-label">Supplier</div>
+        <input id="supplier" type="text" placeholder="e.g. Alamo #XML" oninput="update()" />
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <div class="field-label">COR <span class="field-hint">Country of Residence</span></div>
+          <input id="cor" type="text" placeholder="e.g. AU" oninput="update()" />
+        </div>
+        <div class="field">
+          <div class="field-label">Pickup Country / Location</div>
+          <input id="pickup" type="text" placeholder="e.g. AU / MEL" oninput="update()" />
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Affiliate</div>
+        <input id="affiliate" type="text" placeholder="e.g. kayak_direct_au" oninput="update()" />
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <div class="field-label">Date From</div>
+          <input id="dateFrom" type="date" oninput="update()" />
+        </div>
+        <div class="field">
+          <div class="field-label">Date To</div>
+          <input id="dateTo" type="date" oninput="update()" />
+        </div>
+      </div>
+
+      <div class="section-title">Market Data</div>
+
+      <div class="row">
+        <div class="field">
+          <div class="field-label">Market Share % <span class="field-hint">target: 5–15%</span></div>
+          <input id="marketSharePct" type="number" step="0.1" placeholder="e.g. 2.8" oninput="update()" />
+        </div>
+        <div class="field">
+          <div class="field-label">Superset Link</div>
+          <input id="supersetLink" type="text" placeholder="https://superset0.bookinggroup.com/superset/dashboard/p/QPdyXyDzWJL/" oninput="update()" />
+        </div>
+      </div>
+      <div class="attach-note">📎 Attach Superset screenshot to this ticket</div>
+
+      <div class="section-title">Comparison</div>
+
+      <div class="field">
+        <div class="field-label">Comparison Link <span class="field-hint">e.g. Kayak</span></div>
+        <input id="comparisonLink" type="text" placeholder="https://www.kayak.com.au/cars/…" oninput="update()" />
+      </div>
+      <div class="attach-note">📎 Attach comparison screenshot to this ticket</div>
+
+      <div class="section-title">RCPM Change</div>
+
+      <div class="field">
+        <div class="field-label">Direction</div>
+        <select id="rcpmDirection" oninput="update()">
+          <option value="">Select…</option>
+          <option value="Increase ↑">Increase ↑</option>
+          <option value="Decrease ↓">Decrease ↓</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <div class="field-label">Change Amount <span class="field-hint">local currency</span></div>
+          <input id="changeAmount" type="number" placeholder="e.g. 8" oninput="update()" />
+        </div>
+
+      </div>
+
+      <div class="field">
+        <div class="field-label">Currency</div>
+        <select id="currency" oninput="handleCurrency()">
+          <option value="EUR">EUR</option>
+          <option value="USD">USD</option>
+          <option value="AUD">AUD</option>
+          <option value="CAD">CAD</option>
+          <option value="GBP">GBP</option>
+          <option value="custom">Custom…</option>
+        </select>
+        <input id="currencyCustom" type="text" placeholder="Enter currency code" oninput="update()"
+          style="display:none; margin-top:6px;" />
+      </div>
+
+      <div class="field">
+        <div class="field-label">Notes <span class="field-hint">optional</span></div>
+        <textarea id="notes" placeholder="Any additional context…" oninput="update()"></textarea>
+      </div>
+
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-panel">
+      <div class="preview-label">Preview</div>
+      <pre id="preview"></pre>
+      <div id="ms-warning"></div>
+
+      <div class="btn-row">
+        <button class="btn" id="copy-text-btn" onclick="copyText()">Copy Text to Clipboard</button>
+      </div>
+
+      <div style="margin-top:16px; background:#fff; border:1.5px solid #dfe1e6; border-radius:4px; padding:14px 16px;">
+        <div style="font-size:11px; font-weight:700; color:#44546f; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Instructions</div>
+        <ol style="padding-left:16px; margin:0; display:flex; flex-direction:column; gap:6px;">
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Complete the template.</li>
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Double-check the links and provided information.</li>
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Press <strong>Copy Text to Clipboard</strong> button.</li>
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Go to Jira and create a new RCPM task.</li>
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Paste the copied text into the Jira task's description.</li>
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Attach the screenshots to the Jira task.</li>
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Double-check the provided information and submit the ticket 🙂</li>
+        </ol>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>🔗 BCRM: <a href="https://bcrm.bookinggroup.com/System/RetailCheatPriceModifierSettings.aspx" target="_blank">RetailCheatPriceModifierSettings.aspx</a></span>
+    <span>📊 Superset: <a href="https://superset0.bookinggroup.com/superset/dashboard/p/QPdyXyDzWJL/" target="_blank">superset0.bookinggroup.com</a></span>
+  </div>
+
+</div>
+
+<script>
+  const FIELDS = ['supplier','cor','pickup','affiliate','dateFrom','dateTo',
+                  'marketSharePct','supersetLink','comparisonLink',
+                  'rcpmDirection','changeAmount','currency','currencyCustom','notes'];
+
+  function val(id) { return document.getElementById(id).value.trim(); }
+  function filled(v) { return v || '___'; }
+
+  function getState() {
+    const s = {};
+    FIELDS.forEach(f => { s[f] = val(f); });
+    return s;
+  }
+
+  function setState(s) {
+    FIELDS.forEach(f => {
+      const el = document.getElementById(f);
+      if (el && s[f] !== undefined) el.value = s[f];
+    });
+  }
+
+  function encodeState(state) {
+    return btoa(encodeURIComponent(JSON.stringify(state)));
+  }
+
+  function decodeState(hash) {
+    try { return JSON.parse(decodeURIComponent(atob(hash))); }
+    catch { return null; }
+  }
+
+  function generateText() {
+    const supplier  = val('supplier');
+    const cor       = val('cor');
+    const pickup    = val('pickup');
+    const affiliate = val('affiliate');
+    const dateFrom  = val('dateFrom');
+    const dateTo    = val('dateTo');
+    const msPct     = val('marketSharePct');
+    const ssLink    = val('supersetLink');
+    const compLink  = val('comparisonLink');
+    const dir       = val('rcpmDirection');
+    const amt       = val('changeAmount');
+    const currency  = val('currency') === 'custom' ? (val('currencyCustom') || 'Custom') : (val('currency') || 'EUR');
+    const notes     = val('notes');
+    const duration  = dateFrom && dateTo ? `${dateFrom} → ${dateTo}` : dateFrom || dateTo || '';
+
+    const lines = [
+      `RCPM TICKET`,
+      `${'─'.repeat(21)}`,``,
+      `SUPPLIER          ${filled(supplier)}`,
+      `COR               ${filled(cor)}`,
+      `PICKUP LOCATION   ${filled(pickup)}`,
+      `AFFILIATE         ${filled(affiliate)}`,
+      `DURATION          ${filled(duration)}`,``,
+      `MARKET DATA`,
+      `${'─'.repeat(21)}`,
+      `Market Share      ${filled(msPct)}${msPct ? '%' : ''}`,
+      `Superset Link     ${filled(ssLink)}`,
+      `[Attach superset screenshot]`,``,
+      `COMPARISON`,
+      `${'─'.repeat(21)}`,
+      `Comparison Link   ${filled(compLink)}`,
+      `[Attach comparison screenshot]`,``,
+      `RCPM CHANGE`,
+      `${'─'.repeat(21)}`,
+      `Direction         ${filled(dir)}`,
+      `Change Amount     ${filled(amt)}${amt ? ' ' + currency : ''}`,
+    ];
+    if (notes) lines.push('', 'NOTES', `${'─'.repeat(21)}`, notes);
+    return lines.join('\n');
+  }
+
+  function update() {
+    document.getElementById('preview').textContent = generateText();
+    const pct = parseFloat(val('marketSharePct'));
+    const warn = document.getElementById('ms-warning');
+    if (!val('marketSharePct')) {
+      warn.className = ''; warn.textContent = '';
+    } else if (pct < 5) {
+      warn.className = 'low';
+      warn.textContent = `⚠️ ${pct}% is below the 5% threshold — ticket may not proceed`;
+    } else if (pct > 15) {
+      warn.className = 'high';
+      warn.textContent = `⚠️ ${pct}% exceeds 15% — review with playbook`;
+    } else {
+      warn.className = 'ok';
+      warn.textContent = `✓ ${pct}% is within the 5–15% target range`;
+    }
+  }
+
+  function handleCurrency() {
+    const isCustom = document.getElementById('currency').value === 'custom';
+    document.getElementById('currencyCustom').style.display = isCustom ? '' : 'none';
+    update();
+  }
+
+  function copyText() {
+    navigator.clipboard.writeText(generateText()).then(() => {
+      const btn = document.getElementById('copy-text-btn');
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('done');
+      setTimeout(() => { btn.textContent = 'Copy Text to Clipboard'; btn.classList.remove('done'); }, 2000);
+    });
+  }
+
+
+
+  function enterViewMode() {
+    document.body.classList.add('view-mode');
+    document.getElementById('view-banner').classList.add('show');
+    document.getElementById('copy-text-btn').style.display = 'none';
+    document.getElementById('generate-link-btn').style.display = 'none';
+  }
+
+  function enterEditMode() {
+    document.body.classList.remove('view-mode');
+    document.getElementById('view-banner').classList.remove('show');
+    document.getElementById('copy-text-btn').style.display = '';
+    history.replaceState(null, '', location.pathname + location.search);
+    FIELDS.forEach(f => { const el = document.getElementById(f); if (el) el.value = ''; });
+    document.getElementById('currencyCustom').style.display = 'none';
+    update();
+  }
+
+  // Boot: check for encoded state in URL hash
+  (function init() {
+    const hash = location.hash.slice(1);
+    if (hash) {
+      const state = decodeState(hash);
+      if (state) { setState(state); enterViewMode(); }
+    }
+    update();
+  })();
+</script>
+</body>
+</html>
