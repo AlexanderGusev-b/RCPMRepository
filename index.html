@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RCPM Jira Ticket Template</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7; min-height: 100vh;
+    padding: 32px 16px; color: #172b4d;
+  }
+  .wrapper { max-width: 820px; margin: 0 auto; }
+
+  .header {
+    background: #0052cc; color: #fff;
+    border-radius: 6px 6px 0 0; padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-sub { font-size: 11px; opacity: 0.75; letter-spacing: 0.08em; text-transform: uppercase; }
+  .header-title { font-size: 20px; font-weight: 700; margin-top: 2px; }
+  .header-badge {
+    background: rgba(255,255,255,0.15); border-radius: 4px;
+    padding: 4px 12px; font-size: 12px; font-weight: 600;
+  }
+
+  #view-banner {
+    display: none; background: #e3fcef; border-bottom: 1.5px solid #00875a;
+    padding: 10px 24px; font-size: 13px; color: #006644;
+    align-items: center; justify-content: space-between; gap: 12px;
+  }
+  #view-banner.show { display: flex; }
+  #edit-btn {
+    background: #00875a; color: #fff; border: none; border-radius: 4px;
+    padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: inherit; white-space: nowrap; flex-shrink: 0;
+  }
+  #edit-btn:hover { background: #006644; }
+
+  .body { display: grid; grid-template-columns: 1fr 340px; }
+  .form-panel { background: #fff; padding: 24px; border-right: 1px solid #dfe1e6; }
+
+  .section-title {
+    font-size: 11px; font-weight: 700; color: #0052cc;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    border-bottom: 2px solid #0052cc;
+    padding-bottom: 5px; margin-bottom: 14px; margin-top: 22px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .field { margin-bottom: 14px; }
+  .field-label {
+    font-size: 12px; font-weight: 600; color: #44546f;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px;
+  }
+  .field-label .req { color: #ff5630; font-size: 13px; line-height: 1; }
+  .field-hint { font-size: 11px; color: #8993a4; font-style: italic; font-weight: 400; text-transform: none; letter-spacing: 0; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  input, select, textarea {
+    width: 100%; padding: 7px 10px;
+    border: 1.5px solid #dfe1e6; border-radius: 4px;
+    font-size: 13px; color: #172b4d; background: #fff;
+    font-family: inherit; outline: none; transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: #0052cc; }
+  input.invalid, select.invalid { border-color: #ff5630 !important; background: #fff8f6; }
+  textarea { height: 68px; resize: vertical; }
+  select { cursor: pointer; }
+
+  /* Radio toggle for All / Fixed */
+  .radio-group {
+    display: flex; gap: 16px; margin-top: 2px;
+  }
+  .radio-opt {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: #172b4d; cursor: pointer;
+    user-select: none;
+  }
+  .radio-opt input[type="radio"] {
+    width: 15px; height: 15px; padding: 0;
+    cursor: pointer; accent-color: #0052cc;
+    border: none; background: none;
+  }
+  .radio-group.invalid-group label { color: #ff5630; }
+
+  /* Date inputs row (shown only when Fixed) */
+  #date-inputs { display: none; margin-top: 12px; }
+
+  /* Amount + EUR suffix */
+  .amount-wrap { display: flex; align-items: center; }
+  .amount-wrap input { border-radius: 4px 0 0 4px; border-right: none; }
+  .amount-suffix {
+    padding: 7px 10px; background: #f4f5f7;
+    border: 1.5px solid #dfe1e6; border-left: none;
+    border-radius: 0 4px 4px 0;
+    font-size: 13px; color: #44546f; font-weight: 600; white-space: nowrap;
+  }
+
+  body.view-mode input,
+  body.view-mode select,
+  body.view-mode textarea {
+    background: #f4f5f7; color: #44546f;
+    border-color: #f4f5f7; cursor: default; pointer-events: none;
+  }
+
+  .attach-reminder {
+    display: flex; align-items: flex-start; gap: 8px;
+    background: #fff8e6; border: 1.5px solid #ffab00;
+    border-radius: 4px; padding: 10px 14px;
+    font-size: 12px; font-weight: 600; color: #974f0c;
+  }
+  .attach-reminder span.icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  .preview-panel { background: #fafbfc; padding: 24px 20px; }
+  .preview-label {
+    font-size: 11px; font-weight: 700; color: #44546f;
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px;
+  }
+  pre#preview {
+    background: #fff; border: 1.5px solid #dfe1e6; border-radius: 4px;
+    padding: 12px 14px; font-size: 11.5px; line-height: 1.75;
+    color: #172b4d; white-space: pre-wrap; word-break: break-all;
+    min-height: 280px; font-family: 'Courier New', monospace;
+  }
+  #ms-warning {
+    margin-top: 10px; border-radius: 4px; padding: 8px 12px;
+    font-size: 12px; font-weight: 600; display: none;
+  }
+  #ms-warning.low  { background:#fff0f0; border:1.5px solid #ff5630; color:#bf2600; display:block; }
+  #ms-warning.high { background:#fffae6; border:1.5px solid #ff991f; color:#974f0c; display:block; }
+  #ms-warning.ok   { background:#e3fcef; border:1.5px solid #00875a; color:#006644; display:block; }
+
+  #validation-msg {
+    display: none; margin-top: 8px;
+    background: #fff0f0; border: 1.5px solid #ff5630; border-radius: 4px;
+    padding: 8px 12px; font-size: 12px; font-weight: 600; color: #bf2600;
+  }
+  #validation-msg.show { display: block; }
+
+  .btn-row { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .btn {
+    width: 100%; border: none; border-radius: 4px;
+    padding: 10px 0; font-size: 13px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.02em;
+    transition: all 0.2s; font-family: inherit;
+  }
+  #copy-text-btn { background: #0052cc; color: #fff; }
+  #copy-text-btn:hover { background: #0747a6; }
+  #copy-text-btn.done { background: #00875a; }
+
+  .footer {
+    background: #fff; border-top: 1px solid #dfe1e6;
+    border-radius: 0 0 6px 6px;
+    padding: 10px 24px; font-size: 11px; color: #8993a4;
+    display: flex; gap: 20px; flex-wrap: wrap;
+  }
+  .footer a { color: #0052cc; text-decoration: none; }
+
+  @media (max-width: 640px) {
+    .body { grid-template-columns: 1fr; }
+    .header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div>
+      <div class="header-sub">Jira Ticket Template</div>
+      <div class="header-title">RCPM Configuration Request</div>
+    </div>
+    <div class="header-badge">Retail Cheat Price Modifier</div>
+  </div>
+
+  <div id="view-banner">
+    <span>👁 <strong>View mode</strong> — this link was shared with pre-filled data. Fields are read-only.</span>
+    <button id="edit-btn" onclick="enterEditMode()">Start New Ticket</button>
+  </div>
+
+  <div class="body">
+    <div class="form-panel">
+
+      <div class="section-title">Basics</div>
+
+      <div class="field">
+        <div class="field-label">Supplier System Name <span class="req">*</span></div>
+        <input id="supplier" type="text" placeholder="e.g. Alamo #XML" oninput="update()" />
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <div class="field-label">COR <span class="req">*</span> <span class="field-hint">Country of Residence</span></div>
+          <input id="cor" type="text" placeholder="e.g. AU" oninput="update()" />
+        </div>
+        <div class="field">
+          <div class="field-label">Pickup Country <span class="req">*</span></div>
+          <input id="pickupCountry" type="text" placeholder="e.g. AU" oninput="update()" />
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Pickup Location <span class="field-hint">optional</span></div>
+        <input id="pickupLocation" type="text" placeholder="e.g. Melbourne" oninput="update()" />
+      </div>
+
+      <div class="field">
+        <div class="field-label">Affiliates <span class="req">*</span></div>
+        <input id="affiliate" type="text" placeholder="e.g. kayak_direct_au" oninput="update()" />
+      </div>
+
+      <!-- Date Type dropdown -->
+      <div class="field">
+        <div class="field-label">Date Type <span class="req">*</span></div>
+        <select id="dateType" oninput="update()">
+          <option value="">Select…</option>
+          <option value="Booking Date">Booking Date</option>
+          <option value="Pickup Date">Pickup Date</option>
+        </select>
+      </div>
+
+      <!-- All / Fixed radio -->
+      <div class="field">
+        <div class="field-label">Date Range <span class="req">*</span></div>
+        <div class="radio-group" id="dateRangeGroup">
+          <label class="radio-opt">
+            <input type="radio" name="dateRange" id="rangeAll" value="all" onchange="toggleDateRange()" />
+            All
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="dateRange" id="rangeFixed" value="fixed" onchange="toggleDateRange()" />
+            Fixed
+          </label>
+        </div>
+      </div>
+
+      <!-- Date From / To — shown only when Fixed is selected -->
+      <div id="date-inputs">
+        <div class="row">
+          <div class="field">
+            <div class="field-label">Date From <span class="req">*</span></div>
+            <input id="dateFrom" type="text" placeholder="dd/mm/yyyy" readonly />
+          </div>
+          <div class="field">
+            <div class="field-label">Date To <span class="req">*</span></div>
+            <input id="dateTo" type="text" placeholder="dd/mm/yyyy" readonly />
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Duration <span class="field-hint">optional — numeric value</span></div>
+        <input id="duration" type="number" step="1" min="0" placeholder="e.g. 7" oninput="update()" />
+      </div>
+
+      <div class="section-title">Market Data</div>
+
+      <div class="row">
+        <div class="field">
+          <div class="field-label">Market Share % <span class="req">*</span> <span class="field-hint">target: 5–15%</span></div>
+          <input id="marketSharePct" type="number" step="0.1" placeholder="e.g. 2.8" oninput="update()" />
+        </div>
+        <div class="field">
+          <div class="field-label">Superset Link <span class="req">*</span></div>
+          <input id="supersetLink" type="text" placeholder="https://superset0.bookinggroup.com/superset/dashboard/p/QPdyXyDzWJL/" oninput="update()" />
+        </div>
+      </div>
+      <div class="attach-reminder">
+        <span class="icon">⚠️</span>
+        Please don't forget to attach the Superset screenshot to the Jira task!
+      </div>
+
+      <div class="section-title">Comparison</div>
+
+      <div class="field">
+        <div class="field-label">Does the list of affiliates include meta-channels <span class="field-hint">(e.g. Kayak, Skyscanner, Check24 or others)?</span></div>
+        <div class="radio-group" id="metaChannelGroup">
+          <label class="radio-opt">
+            <input type="radio" name="metaChannel" id="metaYes" value="yes" onchange="toggleMetaChannel()" />
+            Yes
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="metaChannel" id="metaNo" value="no" onchange="toggleMetaChannel()" />
+            No
+          </label>
+        </div>
+      </div>
+
+      <div id="meta-proceed" style="display:none; margin-bottom:14px;">
+        <span style="color:#00875a; font-size:13px; font-weight:600;">✓ Proceed to the next section</span>
+      </div>
+
+      <div id="meta-comparison-fields" style="display:none;">
+        <div class="field">
+          <div class="field-label">Comparison Link <span class="req">*</span> <span class="field-hint">e.g. Kayak</span></div>
+          <input id="comparisonLink" type="text" placeholder="https://www.kayak.com.au/cars/…" oninput="update()" />
+        </div>
+        <div class="attach-reminder">
+          <span class="icon">⚠️</span>
+          Please don't forget to attach the comparison screenshot to the Jira task!
+        </div>
+      </div>
+
+      <div class="section-title">RCPM Change</div>
+
+      <div class="field">
+        <div class="field-label">Direction <span class="req">*</span></div>
+        <select id="rcpmDirection" oninput="onDirectionChange()">
+          <option value="">Select…</option>
+          <option value="Increase">Increase ↑</option>
+          <option value="Decrease">Decrease ↓</option>
+        </select>
+      </div>
+
+      <!-- Fixed / Percentage radio -->
+      <div class="field">
+        <div class="field-label">Change Type <span class="req">*</span></div>
+        <div class="radio-group" id="changeTypeGroup">
+          <label class="radio-opt">
+            <input type="radio" name="changeType" id="typeFixed" value="fixed" onchange="toggleChangeType()" />
+            Fixed
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="changeType" id="typePercentage" value="percentage" onchange="toggleChangeType()" />
+            Percentage
+          </label>
+        </div>
+      </div>
+
+      <!-- Change Amount — shown only when a change type is selected -->
+      <div id="change-amount-wrap" style="display:none;">
+        <div class="field">
+          <div class="field-label">Change Amount <span class="req">*</span></div>
+          <div class="amount-wrap">
+            <input id="changeAmount" type="number" step="0.01" placeholder="e.g. 8" oninput="onAmountInput()" />
+            <div class="amount-suffix" id="amountSuffix">EUR</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Outcome</div>
+
+      <div class="field">
+        <div class="field-label">Expected Outcome <span class="req">*</span></div>
+        <input id="expectedOutcome" type="text" placeholder="Describe the expected outcome…" oninput="update()" />
+      </div>
+
+      <div class="field">
+        <div class="field-label">Notes <span class="field-hint">optional</span></div>
+        <textarea id="notes" placeholder="Any additional context…" oninput="update()"></textarea>
+      </div>
+
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-panel">
+      <div class="preview-label">Preview</div>
+      <pre id="preview"></pre>
+      <div id="ms-warning"></div>
+      <div id="validation-msg"></div>
+
+      <div class="btn-row">
+        <button class="btn" id="copy-text-btn" onclick="copyText()">Copy Text to Clipboard</button>
+      </div>
+
+      <div style="margin-top:16px; background:#fff; border:1.5px solid #dfe1e6; border-radius:4px; padding:14px 16px;">
+        <div style="font-size:11px; font-weight:700; color:#44546f; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Instructions</div>
+        <ol style="padding-left:16px; margin:0; display:flex; flex-direction:column; gap:6px;">
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Complete the template.</li>
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Double-check the links and provided information.</li>
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Press <strong>Copy Text to Clipboard</strong> button.</li>
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Go to Jira and create a new RCPM task.</li>
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Paste the copied text into the Jira task's description.</li>
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Attach the screenshots to the Jira task.</li>
+          <li style="font-size:12px; color:#172b4d; line-height:1.5;">Double-check the provided information and submit the ticket 🙂</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>🔗 BCRM: <a href="https://bcrm.bookinggroup.com/System/RetailCheatPriceModifierSettings.aspx" target="_blank">RetailCheatPriceModifierSettings.aspx</a></span>
+    <span>📊 Superset: <a href="https://superset0.bookinggroup.com/superset/dashboard/p/QPdyXyDzWJL/" target="_blank">superset0.bookinggroup.com</a></span>
+  </div>
+
+</div>
+
+<script>
+  const REQUIRED_ALWAYS = ['supplier','cor','pickupCountry','affiliate','dateType','marketSharePct','supersetLink','rcpmDirection','expectedOutcome'];
+  const FIELDS = ['supplier','cor','pickupCountry','pickupLocation','affiliate','dateType','dateFrom','dateTo','duration','marketSharePct','supersetLink','comparisonLink','rcpmDirection','changeAmount','expectedOutcome','notes'];
+
+  function val(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+  function filled(v) { return v || '___'; }
+
+  // ── Date range helpers ────────────────────────────────────────────────────
+  function getSelectedRange() {
+    const all   = document.getElementById('rangeAll');
+    const fixed = document.getElementById('rangeFixed');
+    if (all && all.checked) return 'all';
+    if (fixed && fixed.checked) return 'fixed';
+    return '';
+  }
+
+  function toggleDateRange() {
+    const range = getSelectedRange();
+    const dateInputsDiv = document.getElementById('date-inputs');
+    dateInputsDiv.style.display = (range === 'fixed') ? 'block' : 'none';
+    // Clear dates when switching to All
+    if (range === 'all') {
+      ['dateFrom','dateTo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el._flatpickr) el._flatpickr.clear();
+      });
+    }
+    update();
+  }
+
+  function getDateDisplay() {
+    const range = getSelectedRange();
+    if (!range) return '';
+    if (range === 'all') return 'All';
+    const from = val('dateFrom') || '___';
+    const to   = val('dateTo')   || '___';
+    return `${from} → ${to}`;
+  }
+
+  // ── Change type (Fixed / Percentage) helpers ──────────────────────────────
+  function getSelectedChangeType() {
+    const fixed = document.getElementById('typeFixed');
+    const pct   = document.getElementById('typePercentage');
+    if (fixed && fixed.checked) return 'fixed';
+    if (pct   && pct.checked)   return 'percentage';
+    return '';
+  }
+
+  function toggleChangeType() {
+    const t = getSelectedChangeType();
+    const wrap   = document.getElementById('change-amount-wrap');
+    const suffix = document.getElementById('amountSuffix');
+    wrap.style.display = t ? 'block' : 'none';
+    suffix.textContent = (t === 'percentage') ? '%' : 'EUR';
+    // Re-apply sign in case direction was already set
+    enforceAmountSign();
+    update();
+  }
+
+  // ── Direction / Amount sign logic ─────────────────────────────────────────
+  function onDirectionChange() {
+    enforceAmountSign();
+    update();
+  }
+
+  function onAmountInput() {
+    enforceAmountSign();
+    update();
+  }
+
+  function enforceAmountSign() {
+    const dir = val('rcpmDirection');
+    const el  = document.getElementById('changeAmount');
+    if (!el.value) return;
+    const num = parseFloat(el.value);
+    if (isNaN(num)) return;
+    if (dir === 'Decrease' && num > 0) el.value = -Math.abs(num);
+    if (dir === 'Increase' && num < 0) el.value =  Math.abs(num);
+  }
+
+  function getFormattedAmount() {
+    const dir  = val('rcpmDirection');
+    const amt  = val('changeAmount');
+    const type = getSelectedChangeType();
+    if (!amt) return '';
+    const num = parseFloat(amt);
+    if (isNaN(num)) return '';
+    const abs  = Math.abs(num);
+    const unit = (type === 'percentage') ? '%' : 'EUR';
+    if (dir === 'Increase') return `+${abs} ${unit}`;
+    if (dir === 'Decrease') return `-${abs} ${unit}`;
+    return `${num} ${unit}`;
+  }
+
+  // ── Generate preview text ─────────────────────────────────────────────────
+  function getMetaChannelAnswer() {
+    const yes = document.getElementById('metaYes');
+    const no  = document.getElementById('metaNo');
+    if (yes && yes.checked) return 'yes';
+    if (no  && no.checked)  return 'no';
+    return '';
+  }
+
+  function generateText() {
+    const supplier        = val('supplier');
+    const cor             = val('cor');
+    const pickupCountry   = val('pickupCountry');
+    const pickupLocation  = val('pickupLocation');
+    const affiliate       = val('affiliate');
+    const dateType        = val('dateType');
+    const dateDisp        = getDateDisplay();
+    const duration        = val('duration');
+    const msPct           = val('marketSharePct');
+    const ssLink          = val('supersetLink');
+    const compLink        = val('comparisonLink');
+    const dir             = val('rcpmDirection');
+    const expectedOutcome = val('expectedOutcome');
+    const notes           = val('notes');
+    const fmtAmt          = getFormattedAmount();
+    const metaAnswer      = getMetaChannelAnswer();
+
+    const lines = [
+      `RCPM TICKET`,
+      `${'─'.repeat(21)}`, ``,
+      `SUPPLIER          ${filled(supplier)}`,
+      `COR               ${filled(cor)}`,
+      `PICKUP COUNTRY    ${filled(pickupCountry)}`,
+      `PICKUP LOCATION   ${filled(pickupLocation)}`,
+      `AFFILIATES        ${filled(affiliate)}`,
+      `DATE TYPE         ${filled(dateType)}`,
+      `TIME RANGE        ${filled(dateDisp)}`,
+      `DURATION          ${filled(duration)}`, ``,
+      `MARKET DATA`,
+      `${'─'.repeat(21)}`,
+      `Market Share      ${filled(msPct)}${msPct ? '%' : ''}`,
+      `Superset Link     ${filled(ssLink)}`,
+      `[Attach superset screenshot]`, ``,
+      `COMPARISON`,
+      `${'─'.repeat(21)}`,
+      `Includes Meta-Channels  ${metaAnswer ? metaAnswer.toUpperCase() : '___'}`,
+    ];
+    if (metaAnswer === 'yes') {
+      lines.push(`Comparison Link   ${filled(compLink)}`, `[Attach comparison screenshot]`);
+    }
+    lines.push(
+      ``,
+      `RCPM CHANGE`,
+      `${'─'.repeat(21)}`,
+      `Direction         ${filled(dir)}`,
+      `Change Amount     ${filled(fmtAmt)}`,
+      ``,
+      `OUTCOME`,
+      `${'─'.repeat(21)}`,
+      `Expected Outcome  ${filled(expectedOutcome)}`,
+    );
+    if (notes) lines.push('', 'NOTES', `${'─'.repeat(21)}`, notes);
+    return lines.join('\n');
+  }
+
+  // ── Validation ────────────────────────────────────────────────────────────
+  function validate() {
+    const missing = [];
+
+    REQUIRED_ALWAYS.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const empty = !el.value.trim();
+      el.classList.toggle('invalid', empty);
+      if (empty) missing.push(id);
+    });
+
+    // Date range: a radio must be selected
+    const range = getSelectedRange();
+    const rg = document.getElementById('dateRangeGroup');
+    if (!range) {
+      rg.classList.add('invalid-group');
+      missing.push('dateRange');
+    } else {
+      rg.classList.remove('invalid-group');
+    }
+
+    // If Fixed, both date fields must be filled
+    if (range === 'fixed') {
+      ['dateFrom','dateTo'].forEach(id => {
+        const el = document.getElementById(id);
+        const ok = !!el.value.trim();
+        el.classList.toggle('invalid', !ok);
+        if (!ok) missing.push(id);
+      });
+    }
+
+    // Meta-channel question must be answered
+    const metaAnswer = getMetaChannelAnswer();
+    const mcg = document.getElementById('metaChannelGroup');
+    if (!metaAnswer) {
+      mcg.classList.add('invalid-group');
+      missing.push('metaChannel');
+    } else {
+      mcg.classList.remove('invalid-group');
+      // comparisonLink only required if Yes
+      if (metaAnswer === 'yes') {
+        const clEl = document.getElementById('comparisonLink');
+        const empty = !clEl.value.trim();
+        clEl.classList.toggle('invalid', empty);
+        if (empty) missing.push('comparisonLink');
+      }
+    }
+
+    // Change Type: a radio must be selected
+    const changeType = getSelectedChangeType();
+    const ctg = document.getElementById('changeTypeGroup');
+    if (!changeType) {
+      ctg.classList.add('invalid-group');
+      missing.push('changeType');
+    } else {
+      ctg.classList.remove('invalid-group');
+      // Change Amount is only required once a change type is selected
+      const amtEl = document.getElementById('changeAmount');
+      const empty = !amtEl.value.trim();
+      amtEl.classList.toggle('invalid', empty);
+      if (empty) missing.push('changeAmount');
+    }
+
+    return missing;
+  }
+
+  // ── Meta-channel toggle ──────────────────────────────────────────────────
+  function toggleMetaChannel() {
+    const answer = getMetaChannelAnswer();
+    const compFields = document.getElementById('meta-comparison-fields');
+    const proceedMsg = document.getElementById('meta-proceed');
+    if (answer === 'yes') {
+      compFields.style.display = 'block';
+      proceedMsg.style.display = 'none';
+    } else if (answer === 'no') {
+      compFields.style.display = 'none';
+      proceedMsg.style.display = 'block';
+      const clEl = document.getElementById('comparisonLink');
+      if (clEl) { clEl.value = ''; clEl.classList.remove('invalid'); }
+    } else {
+      compFields.style.display = 'none';
+      proceedMsg.style.display = 'none';
+    }
+    document.getElementById('metaChannelGroup').classList.remove('invalid-group');
+    update();
+  }
+
+  // ── Update preview + MS warning ───────────────────────────────────────────
+  function update() {
+    document.getElementById('preview').textContent = generateText();
+
+    // Clear invalid highlights as fields are filled
+    REQUIRED_ALWAYS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.value.trim()) el.classList.remove('invalid');
+    });
+    if (getSelectedRange()) document.getElementById('dateRangeGroup').classList.remove('invalid-group');
+    if (getSelectedChangeType()) document.getElementById('changeTypeGroup').classList.remove('invalid-group');
+    if (getMetaChannelAnswer()) document.getElementById('metaChannelGroup').classList.remove('invalid-group');
+    const compEl = document.getElementById('comparisonLink');
+    if (compEl && compEl.value.trim()) compEl.classList.remove('invalid');
+    const amtEl = document.getElementById('changeAmount');
+    if (amtEl && amtEl.value.trim()) amtEl.classList.remove('invalid');
+
+    const pct  = parseFloat(val('marketSharePct'));
+    const warn = document.getElementById('ms-warning');
+    if (!val('marketSharePct')) {
+      warn.className = ''; warn.textContent = '';
+    } else if (pct < 5) {
+      warn.className = 'low';
+      warn.textContent = `⚠️ ${pct}% is below the 5% threshold — ticket may not proceed`;
+    } else if (pct > 15) {
+      warn.className = 'high';
+      warn.textContent = `⚠️ ${pct}% exceeds 15% — review with playbook`;
+    } else {
+      warn.className = 'ok';
+      warn.textContent = `✓ ${pct}% is within the 5–15% target range`;
+    }
+  }
+
+  // ── Copy ──────────────────────────────────────────────────────────────────
+  function copyText() {
+    const missing = validate();
+    const vmsg = document.getElementById('validation-msg');
+    if (missing.length > 0) {
+      vmsg.textContent = `⚠️ Please fill in all required fields (marked with *) before copying.`;
+      vmsg.classList.add('show');
+      setTimeout(() => vmsg.classList.remove('show'), 4000);
+      return;
+    }
+    vmsg.classList.remove('show');
+    navigator.clipboard.writeText(generateText()).then(() => {
+      const btn = document.getElementById('copy-text-btn');
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('done');
+      setTimeout(() => { btn.textContent = 'Copy Text to Clipboard'; btn.classList.remove('done'); }, 2000);
+    });
+  }
+
+  // ── View / Edit mode ──────────────────────────────────────────────────────
+  function enterViewMode() {
+    document.body.classList.add('view-mode');
+    document.getElementById('view-banner').classList.add('show');
+    document.getElementById('copy-text-btn').style.display = 'none';
+  }
+
+  function enterEditMode() {
+    document.body.classList.remove('view-mode');
+    document.getElementById('view-banner').classList.remove('show');
+    document.getElementById('copy-text-btn').style.display = '';
+    history.replaceState(null, '', location.pathname + location.search);
+    FIELDS.forEach(f => {
+      const el = document.getElementById(f);
+      if (!el) return;
+      if (el._flatpickr) el._flatpickr.clear();
+      else el.value = '';
+      el.disabled = false; el.style.opacity = '';
+    });
+    document.getElementById('rangeAll').checked   = false;
+    document.getElementById('rangeFixed').checked = false;
+    document.getElementById('date-inputs').style.display = 'none';
+    document.getElementById('typeFixed').checked      = false;
+    document.getElementById('typePercentage').checked = false;
+    document.getElementById('change-amount-wrap').style.display = 'none';
+    document.getElementById('amountSuffix').textContent = 'EUR';
+    document.getElementById('metaYes').checked = false;
+    document.getElementById('metaNo').checked  = false;
+    document.getElementById('meta-comparison-fields').style.display = 'none';
+    document.getElementById('meta-proceed').style.display = 'none';
+    update();
+  }
+
+  // ── Boot ──────────────────────────────────────────────────────────────────
+  const fpConfig = { dateFormat: 'd/m/Y', allowInput: false, disableMobile: true, onChange: () => update() };
+  flatpickr('#dateFrom', fpConfig);
+  flatpickr('#dateTo',   fpConfig);
+
+  (function init() {
+    const hash = location.hash.slice(1);
+    if (hash) {
+      try {
+        const state = JSON.parse(decodeURIComponent(atob(hash)));
+        if (state) {
+          FIELDS.forEach(f => { const el = document.getElementById(f); if (el && state[f] !== undefined) el.value = state[f]; });
+          enterViewMode();
+        }
+      } catch(e) {}
+    }
+    update();
+  })();
+</script>
+</body>
+</html>
